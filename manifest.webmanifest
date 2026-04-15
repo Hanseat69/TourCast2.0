@@ -1,0 +1,50 @@
+{
+  "name": "TourCast – Motorrad Wetter",
+  "short_name": "TourCast",
+  "description": "Grip-Heatmap, Windchill, Radar und Go/No-Go-Status für Motorradfahrer.",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#060A0F",
+  "theme_color": "#060A0F",
+  "lang": "de",
+  "categories": ["weather", "navigation", "lifestyle"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/screen-map.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "label": "Grip-Heatmap & Go/No-Go Status"
+    },
+    {
+      "src": "screenshots/screen-route.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "label": "Routenplanung mit Höhenprofil"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Route planen",
+      "short_name": "Route",
+      "description": "Direkt zur Routenplanung",
+      "url": "/?tab=route",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

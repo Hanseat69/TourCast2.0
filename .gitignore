@@ -1,0 +1,26 @@
+# Secrets – niemals einchecken!
+.env
+.env.example
+
+# Ordner mit API-Keys und sensiblen Daten
+API-Keys - NO UPLOAD/
+
+# Alte/nicht verwendete Codedateien
+_old Codes/
+
+# Node / Electron
+node_modules/
+dist/
+out/
+release/
+
+# Logs
+*.log
+logs/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# VS Code
+.vscode/settings.json

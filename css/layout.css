@@ -1,0 +1,584 @@
+/* ── TourCast layout.css – Karte, Top-Nav, Panels, Status ── */
+
+/* ── Leaflet Map ── */
+#map {
+  position:  absolute;
+  inset:     0;
+  z-index:   0;
+  background:var(--bg);
+}
+
+.leaflet-interactive {
+  cursor:                     pointer;
+  touch-action:               manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dark-tiles .leaflet-tile {
+  filter: invert(90%) hue-rotate(180deg) saturate(0.7) brightness(0.85);
+}
+
+.leaflet-control-zoom { display:none !important; }
+
+.leaflet-control-attribution {
+  background:   var(--panel-bg)   !important;
+  color:        var(--text-muted) !important;
+  font-family:  var(--font-mono)  !important;
+  font-size:    9px               !important;
+  border-top:   1px solid rgba(255,98,0,0.10) !important;
+}
+.leaflet-control-attribution a { color:var(--text-label) !important; }
+
+.leaflet-popup-content-wrapper {
+  background:   var(--surface)          !important;
+  color:        var(--text)             !important;
+  border:       1px solid rgba(255,98,0,0.35) !important;
+  border-radius:var(--radius)           !important;
+  box-shadow:   0 10px 48px rgba(0,0,0,0.80) !important;
+  font-family:  var(--font-ui)          !important;
+}
+.leaflet-popup-content       { margin:0 !important; padding:12px 14px !important; }
+.leaflet-popup-tip           { background:var(--surface) !important; }
+.leaflet-popup-close-button  {
+  color:var(--text-muted) !important;
+  font-size:18px !important;
+  top:8px !important; right:10px !important;
+}
+.leaflet-routing-container   { display:none !important; }
+
+/* ── Top Navigation ── */
+.top-nav {
+  position:   fixed;
+  top:        0; left:0; right:0;
+  z-index:    1100;
+  background: var(--nav-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-bottom: 1px solid rgba(255,98,0,0.18);
+  height:     calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.nav-inner {
+  display:     flex;
+  align-items: center;
+  height:      100%;
+  padding:     0 8px;
+  gap:         4px;
+  overflow-x:  auto;
+  scrollbar-width: none;
+}
+.nav-inner::-webkit-scrollbar { display:none; }
+
+.nav-brand {
+  font-size:       15px;
+  font-weight:     700;
+  letter-spacing:  2px;
+  color:           var(--accent);
+  text-transform:  uppercase;
+  white-space:     nowrap;
+  text-shadow:     0 0 24px var(--accent-glow);
+  flex-shrink:     0;
+  padding:         0 4px;
+}
+
+.nav-sep {
+  width:      1px;
+  height:     22px;
+  background: var(--border);
+  flex-shrink:0;
+  margin:     0 2px;
+}
+
+.nav-btn {
+  padding:      6px 10px;
+  background:   none;
+  border:       1px solid transparent;
+  border-radius:20px;
+  color:        var(--text-muted);
+  font-family:  var(--font-ui);
+  font-size:    calc(11px * var(--ui-scale));
+  font-weight:  700;
+  letter-spacing:.3px;
+  cursor:       pointer;
+  white-space:  nowrap;
+  flex-shrink:  0;
+  transition:   color .18s, border-color .18s, background .18s;
+}
+.nav-btn:hover  { color:var(--text-mid); border-color:rgba(255,98,0,0.3); }
+.nav-btn.active {
+  color:        var(--accent);
+  border-color: var(--accent);
+  background:   var(--accent-dim);
+}
+.nav-btn.nav-btn-danger {
+  color:        var(--danger) !important;
+  border-color: var(--danger) !important;
+  background:   rgba(255, 51, 85, 0.12);
+}
+.nav-btn.refresh-btn {
+  font-size: 16px;
+  padding:   4px 8px;
+}
+.nav-btn.help-btn { margin-left:auto; }
+
+/* ── Status Bubble ── */
+#status-bubble {
+  position:   fixed;
+  top:        calc(var(--header-h) + 10px + env(safe-area-inset-top, 0px));
+  right:      12px;
+  z-index:    700;
+  display:    flex;
+  flex-direction: column;
+  align-items:center;
+  gap:        4px;
+}
+
+.go-ring-wrap {
+  position:    relative;
+  width:       48px;
+  height:      48px;
+  cursor:      pointer;
+  flex-shrink: 0;
+}
+
+.go-ring {
+  position:    absolute;
+  inset:       0;
+  border-radius:50%;
+  border:      2px solid currentColor;
+  opacity:     0;
+  animation:   pulse-ring 2.4s ease-out infinite;
+}
+.go-ring#ring2 { animation-delay:.8s; }
+
+@keyframes pulse-ring {
+  0%   { transform:scale(.7); opacity:.6; }
+  80%  { transform:scale(1.4); opacity:0; }
+  100% { opacity:0; }
+}
+
+.go-dot {
+  position:      absolute;
+  inset:         8px;
+  border-radius: 50%;
+  background:    var(--caution);
+  box-shadow:    0 0 16px rgba(255,215,0,.5);
+  transition:    background .4s, box-shadow .4s;
+}
+
+.temp-pill {
+  background:  var(--surface-2);
+  border:      1px solid var(--border);
+  border-radius:12px;
+  padding:     3px 8px;
+  font-family: var(--font-mono);
+  font-size:   calc(10px * var(--ui-scale));
+  color:       var(--text-mid);
+  white-space: nowrap;
+}
+
+.go-label-sm {
+  font-size:   calc(9px * var(--ui-scale));
+  font-weight: 700;
+  letter-spacing:.06em;
+  color:       var(--text-muted);
+  text-transform:uppercase;
+}
+
+/* ── Windchill Panel ── */
+#windchill-panel {
+  position:   fixed;
+  top:        calc(var(--header-h) + 10px + env(safe-area-inset-top, 0px));
+  left:       12px;
+  z-index:    700;
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border:     1px solid var(--border);
+  border-radius: var(--radius);
+  padding:    12px 14px;
+  min-width:  160px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.5);
+}
+
+.wc-header {
+  font-size:   calc(10px * var(--ui-scale));
+  font-weight: 700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:       var(--text-muted);
+  margin-bottom:6px;
+}
+.wc-big {
+  font-family: var(--font-mono);
+  font-size:   calc(32px * var(--ui-scale));
+  font-weight: 700;
+  color:       var(--text-bright);
+  line-height: 1;
+}
+.wc-unit {
+  font-family: var(--font-mono);
+  font-size:   calc(14px * var(--ui-scale));
+  color:       var(--text-mid);
+}
+.wc-meta  { margin-top:8px; display:flex; flex-direction:column; gap:3px; }
+.wc-row   {
+  display:         flex;
+  justify-content: space-between;
+  gap:             12px;
+  font-size:       calc(11px * var(--ui-scale));
+  color:           var(--text-muted);
+}
+.wc-row span { color:var(--text-mid); font-family:var(--font-mono); }
+
+/* ── Umwelt-Panel (Kompakt & Lesbar) ── */
+#env-panel {
+  position:   fixed;
+  top:        calc(var(--header-h) + 10px + env(safe-area-inset-top, 0px));
+  left:       12px;
+  z-index:    700;
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border:     1px solid var(--border);
+  border-radius: var(--radius);
+  padding:    16px 18px;
+  min-width:  260px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+
+.env-val-row { display: flex; align-items: center; gap: 8px; }
+
+.sp-header {
+  font-size:   calc(12px * var(--ui-scale));
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform:uppercase;
+  color:       var(--accent);
+  margin-bottom:14px;
+}
+.sp-times {
+  display:    flex;
+  gap:        12px;
+  margin-bottom:12px;
+}
+.sp-time-card {
+  flex:       1;
+  display:    flex;
+  flex-direction:column;
+  align-items:center;
+  gap:        2px;
+}
+.sp-time-label-top {
+  font-size:   calc(9px * var(--ui-scale));
+  font-weight: 800;
+  color:       var(--text-label);
+  letter-spacing: .1em;
+}
+.sp-time-ico { font-size:16px; }
+.sp-time-val {
+  font-family: var(--font-mono);
+  font-size:   calc(13px * var(--ui-scale));
+  font-weight: 700;
+  color:       var(--text-bright);
+}
+.sp-divider {
+  height:     1px;
+  background: var(--border);
+  margin:     12px 0;
+}
+.sp-row {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  gap:             12px;
+  margin-bottom:   8px;
+}
+.sp-label {
+  font-size:  calc(13px * var(--ui-scale));
+  font-weight: 600;
+  color:      var(--text-muted);
+}
+.sp-val {
+  font-family: var(--font-mono);
+  font-size:   calc(13px * var(--ui-scale));
+  font-weight: 700;
+  color:       var(--text-bright);
+}
+.sp-badge {
+  padding:     3px 10px;
+  border-radius:12px;
+  font-size:   calc(10px * var(--ui-scale));
+  font-weight: 800;
+  background:  var(--accent-dim);
+  color:       var(--accent);
+  border:      1px solid rgba(255,98,0,0.3);
+}
+.sp-badge.sp-ok   { background:rgba(0,255,135,0.12); color:var(--go); border-color:rgba(0,255,135,0.3); }
+.sp-badge.sp-warn { background:rgba(255,215,0,0.12); color:var(--caution); border-color:rgba(255,215,0,0.3); }
+
+/* AQI Label Full Width */
+#aqi-label {
+  width: 100%;
+  text-align: center;
+  display: block;
+}
+
+/* ── AQI Panel ── */
+#aqi-panel {
+  position:   fixed;
+  top:        calc(var(--header-h) + 10px + env(safe-area-inset-top, 0px));
+  left:       226px;
+  z-index:    700;
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border:     1px solid var(--border);
+  border-radius: var(--radius);
+  padding:    10px 14px;
+  min-width:  130px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.5);
+}
+.aqi-title {
+  font-size:   calc(10px * var(--ui-scale));
+  font-weight: 700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:       var(--text-muted);
+  margin-bottom:6px;
+}
+.aqi-row {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  font-size:       calc(11px * var(--ui-scale));
+  color:           var(--text-muted);
+  margin-bottom:   3px;
+}
+.aqi-val {
+  font-family: var(--font-mono);
+  font-size:   calc(11px * var(--ui-scale));
+  font-weight: 700;
+  color:       var(--go);
+}
+
+/* ── Grip Legend ── */
+#grip-legend {
+  position:   fixed;
+  bottom:     calc(var(--sheet-peek) + 12px + env(safe-area-inset-bottom, 0px));
+  left:       12px;
+  z-index:    700;
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border:     1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding:    12px 14px;
+  display:    flex;
+  flex-direction:column;
+  gap:        8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  cursor:     pointer;
+}
+.lg-row {
+  display:     flex;
+  align-items: center;
+  gap:         7px;
+  font-size:   calc(12px * var(--ui-scale));
+  font-weight: 600;
+  color:       var(--text-muted);
+  white-space: nowrap;
+}
+.lg-dot {
+  width:        14px;
+  height:       14px;
+  border-radius:50%;
+  flex-shrink:  0;
+}
+
+/* ── Grip Time Bar ── */
+#grip-time-bar {
+  position:   fixed;
+  bottom:     calc(var(--sheet-peek) + 12px + env(safe-area-inset-bottom, 0px));
+  right:      12px;
+  z-index:    700;
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border:     1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding:    8px 12px 10px;
+  min-width:  160px;
+}
+.gt-header {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  gap:             6px;
+  margin-bottom:   6px;
+}
+.gt-label {
+  font-size:   calc(10px * var(--ui-scale));
+  font-weight: 700;
+  color:       var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.gt-time {
+  font-family: var(--font-mono);
+  font-size:   calc(10px * var(--ui-scale));
+  color:       var(--accent);
+  flex:        1;
+  text-align:  center;
+}
+.gt-now-btn {
+  background:   none;
+  border:       1px solid var(--border);
+  border-radius:6px;
+  color:        var(--text-muted);
+  font-size:    calc(9px * var(--ui-scale));
+  padding:      2px 6px;
+  cursor:       pointer;
+  transition:   color .15s, border-color .15s;
+}
+
+/* ── Mobile Optimization (Stacking Panels) ── */
+@media (max-width: 420px) {
+  #aqi-panel {
+    left: 12px;
+    top: calc(var(--header-h) + 185px + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* ── GPS Pulse Marker ── */
+.gps-pulse-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.gps-dot-core {
+  width: 14px; height: 14px;
+  background: #007AFF;
+  border: 2.5px solid #fff;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.gps-pulse-ring {
+  position: absolute;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 122, 255, 0.4);
+  animation: gps-pulse 2s ease-out infinite;
+  z-index: 1;
+}
+@keyframes gps-pulse {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.gt-now-btn:hover { color:var(--accent); border-color:var(--accent); }
+
+/* ═════════════════════════════════════════════════════════════
+   UTILITY CLASSES – Inline Style Replacements
+   ═════════════════════════════════════════════════════════════ */
+
+/* Debug/Status Box */
+.debug-box {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: black;
+  color: lime;
+  padding: 10px;
+  font-family: monospace;
+  z-index: 99999;
+}
+
+/* Icon Sizes */
+.icon-14 { width: 14px; }
+.icon-16 { width: 16px; }
+.icon-28 { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
+
+/* Display Utilities */
+.hidden { display: none; }
+.flex-center { display: flex; align-items: center; }
+.flex-label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
+
+/* Margin Utilities */
+.mt-8 { margin-top: 8px; }
+.mt-10 { margin-top: 10px; }
+.mt-20 { margin-top: 20px; }
+.mb-4 { margin-bottom: 4px; }
+.mb-6 { margin-bottom: 6px; }
+
+/* Content & Overflow */
+.overflow-auto { overflow-y: auto; }
+.max-height-85vh { max-height: 85vh; }
+
+/* Flex Row Layout */
+.flex-row { display: flex; flex-direction: row; }
+
+/* Wind Warning Icon */
+.wind-warn-icon {
+  color: var(--danger);
+  margin-left: 4px;
+}
+
+/* Gear Display */
+.gear-display {
+  font-family: var(--font-ui);
+  font-size: calc(11px * var(--ui-scale));
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+/* AQI Label Row */
+.aqi-label-row {
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* Sp Tip Divider (conditionally hidden) */
+.sp-tip-div {
+  display: none;
+}
+
+/* Grip Legend Dot Colors */
+.lg-dot-warn { background: var(--grip-warn); }
+.lg-dot-wet { background: var(--grip-wet); }
+.lg-dot-drying { background: #86EFAC; }
+.lg-dot-dry { background: var(--grip-dry); }
+
+/* Route Search Section */
+.route-search-section {
+  margin-top: 10px;
+}
+
+.route-section-no-padding {
+  padding-left: 0;
+}
+
+/* Button Display Utility */
+.display-none { display: none; }
+
+/* Route Time Input Accessibility */
+.route-time-input {
+  width: 100%;
+}
+
+/* Grip Container */
+.grip-container { display: none; }
+
+/* Weather Timeline */
+.weather-timeline { display: none; }
+
+/* Route Info Bar */
+.route-info-bar-hidden { display: none; }
+
+/* Elevation Container */
+.elevation-hidden { display: none; }
+
+/* Segment Warning */
+.route-tank-warn-hidden { display: none; }

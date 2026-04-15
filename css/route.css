@@ -1,0 +1,1231 @@
+/* ── TourCast route.css – Routenplanung, Elevation, POI, Waypoints ──
+   Sprint 1 (Block 4) + Sprint 2 (Block 9) – alle neuen Komponenten   */
+
+/* ══════════════════════════════════════════════════════════
+   ROUTE PANEL
+   ══════════════════════════════════════════════════════════ */
+#route-panel {
+  position:         fixed;
+  bottom:           0;
+  left:             0;
+  right:            0;
+  z-index:          900;
+  background:       var(--surface);
+  border-top:       1px solid var(--border);
+  border-radius:    16px 16px 0 0;
+  max-height:       72vh;
+  overflow-y:       auto;
+  overflow-x:       hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  box-shadow:       0 -4px 24px rgba(0,0,0,.45);
+  transition:       transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change:      transform;
+}
+
+#route-panel.panel-hidden {
+  transform: translateY(100%);
+  box-shadow: none; /* Verhindert einen Schattenwurf am unteren Rand */
+}
+
+/* ── Close Button ── */
+.panel-close-btn {
+  position:         absolute;
+  top:              10px;
+  right:            12px;
+  z-index:          100;
+  background:       none;
+  border:           none;
+  color:            var(--text-muted);
+  font-size:        18px;
+  cursor:           pointer;
+  padding:          4px;
+  transition:       color 0.2s;
+}
+.panel-close-btn:hover { color: var(--accent); }
+
+/* ── Tab-Bar ── */
+#tab-bar {
+  display:          flex;
+  border-bottom:    1px solid var(--border);
+  background:       var(--surface-2);
+  border-radius:    16px 16px 0 0;
+  overflow:         hidden;
+  flex-shrink:      0;
+  position:         sticky;
+  top:              0;
+  z-index:          10;
+}
+
+.tab-btn {
+  flex:             1;
+  display:          flex;
+  flex-direction:   column;
+  align-items:      center;
+  gap:              2px;
+  padding:          10px 4px 8px;
+  background:       none;
+  border:           none;
+  color:            var(--text-mid);
+  font-family:      var(--font-ui);
+  font-size:        calc(10px * var(--ui-scale));
+  font-weight:      600;
+  cursor:           pointer;
+  transition:       color .18s, border-bottom .18s;
+  border-bottom:    3px solid transparent;
+}
+
+.tab-btn.active {
+  color:            var(--accent);
+  border-bottom:    3px solid var(--accent);
+}
+
+.tab-ico  { font-size: calc(16px * var(--ui-scale)); line-height: 1; }
+.tab-lbl  { line-height: 1; }
+
+/* ── Tab-Panels ── */
+.tab-panel         { display: none; padding-bottom: 24px; }
+.tab-panel.active  { display: block; }
+
+/* ── Modus-Umschalter A→B / Rundtour ── */
+.seg-mode {
+  display:          flex;
+  gap:              6px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   A→B EINGABEFELDER
+   ══════════════════════════════════════════════════════════ */
+.route-search-row {
+  display:          flex;
+  flex-direction:   column;
+  gap:              6px;
+  padding:          10px 14px 4px;
+  position:         relative; /* Anker für Autocomplete-Liste */
+}
+
+.route-input-wrap {
+  position:         relative;
+}
+
+/* ── Strukturierte Adressfelder ── */
+.addr-grid {
+  display: grid;
+  grid-template-columns: 48px 1fr 60px;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.addr-grid-sub {
+  display: grid;
+  grid-template-columns: 80px 1fr 70px;
+  gap: 6px;
+}
+
+/* Fix: Entfernt den Button-Abstand für die kleinen strukturierten Felder */
+.addr-grid .route-input,
+.addr-grid-sub .route-input {
+  padding-right: 10px !important;
+  min-width: 0; /* Verhindert Layout-Sprünge */
+}
+
+.flag-btn {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+}
+.flag-btn:hover { border-color: var(--accent); }
+
+.addr-tools {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.addr-tool-btn {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-mid);
+  width: 32px;
+  cursor: pointer;
+}
+
+.country-picker-dropdown {
+  position: absolute;
+  z-index: 3000;
+  background: var(--surface-2);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 10px;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  margin-top: 4px;
+}
+
+.route-input {
+  width:            100%;
+  box-sizing:       border-box;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    10px;
+  color:            var(--text-bright);
+  font-family:      var(--font-ui);
+  font-size:        calc(13px * var(--ui-scale));
+  padding:          9px 85px 9px 12px; /* Platz für 3 Buttons rechts */
+  outline:          none;
+  transition:       border-color .18s;
+}
+
+.route-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.input-extra-btn, .input-clear-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.input-extra-btn { right: 30px; }
+.input-clear-btn { right: 8px; }
+
+.input-extra-btn:hover { color: var(--accent); }
+.input-clear-btn:hover { color: var(--danger); }
+.route-input:focus {
+  border-color:     var(--accent);
+}
+
+/* ── Autocomplete ── */
+.autocomplete-list {
+  position:         absolute;
+  top:              calc(100% + 2px);
+  left:             0; right: 0;
+  z-index:          2000;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    10px;
+  overflow:         hidden;
+  box-shadow:       0 8px 24px rgba(0,0,0,.4);
+}
+
+.ac-item {
+  padding:          9px 12px;
+  font-size:        calc(12px * var(--ui-scale));
+  color:            var(--text-mid);
+  cursor:           pointer;
+  border-bottom:    1px solid var(--border);
+  line-height:      1.35;
+  transition:       background .12s;
+  display:          flex;
+  justify-content:  space-between;
+  align-items:      center;
+}
+
+.ac-item:last-child  { border-bottom: none; }
+.ac-item:hover       { background: var(--surface-3); color: var(--text-bright); }
+.ac-item.selected    { background: var(--surface-3); color: var(--accent); border-left: 3px solid var(--accent); }
+
+.ac-details {
+  font-size: 0.85em;
+  opacity: 0.7;
+  display: block;
+}
+
+.ac-title {
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent);
+  background: var(--surface-3);
+  text-transform: uppercase;
+}
+
+.ac-fav-btn, .ac-edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  filter: grayscale(1) opacity(0.5);
+  transition: transform 0.2s;
+}
+
+.ac-fav-btn.active {
+  filter: grayscale(0) opacity(1);
+}
+
+.ac-edit-btn {
+  filter: opacity(0.5);
+}
+
+.ac-fav-btn:hover, .ac-edit-btn:hover {
+  transform: scale(1.2);
+  filter: opacity(1);
+}
+
+/* ══════════════════════════════════════════════════════════
+   AVOID-BUTTONS
+   ══════════════════════════════════════════════════════════ */
+.avoid-row {
+  display:          flex;
+  gap:              6px;
+  padding:          6px 14px 4px;
+  flex-wrap:        wrap;
+}
+
+.avoid-btn {
+  flex:             1;
+  min-width:        80px;
+  padding:          6px 8px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    8px;
+  color:            var(--text-mid);
+  font-family:      var(--font-ui);
+  font-size:        calc(11px * var(--ui-scale));
+  font-weight:      600;
+  cursor:           pointer;
+  text-align:       center;
+  transition:       background .18s, color .18s, border-color .18s;
+}
+
+.avoid-btn.active {
+  background:       rgba(255, 98, 0, .18);
+  border-color:     var(--accent);
+  color:            var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════
+   WAYPOINTS (Drag & Drop)
+   ══════════════════════════════════════════════════════════ */
+#waypoint-list {
+  padding:          2px 14px 0;
+}
+
+.wp-row {
+  display:          flex;
+  align-items:      center;
+  gap:              8px;
+  padding:          7px 10px;
+  margin-bottom:    4px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    8px;
+  cursor:           grab;
+  transition:       background .15s, opacity .15s;
+  user-select:      none;
+}
+
+.wp-row:active      { cursor: grabbing; opacity: .75; }
+.wp-row.drag-over   { background: var(--surface-3); border-color: var(--accent); }
+
+.wp-grip {
+  color:            var(--text-muted);
+  font-size:        16px;
+  line-height:      1;
+  cursor:           grab;
+}
+
+.wp-icon {
+  font-size:        calc(12px * var(--ui-scale));
+  flex-shrink:      0;
+  color:            var(--accent);
+}
+
+.wp-name {
+  flex:             1;
+  font-size:        calc(12px * var(--ui-scale));
+  color:            var(--text-mid);
+  overflow:         hidden;
+  text-overflow:    ellipsis;
+  white-space:      nowrap;
+}
+
+.wp-remove {
+  background:       none;
+  border:           none;
+  color:            var(--text-muted);
+  font-size:        14px;
+  cursor:           pointer;
+  padding:          2px 4px;
+  border-radius:    4px;
+  line-height:      1;
+  transition:       color .15s;
+  flex-shrink:      0;
+}
+
+.wp-remove:hover { color: #FF3355; }
+
+/* ══════════════════════════════════════════════════════════
+   ABFAHRTSZEIT
+   ══════════════════════════════════════════════════════════ */
+.route-depart-row {
+  display:          flex;
+  align-items:      center;
+  gap:              10px;
+  padding:          8px 14px 4px;
+}
+
+.route-depart-lbl {
+  font-size:        calc(11px * var(--ui-scale));
+  color:            var(--text-mid);
+  white-space:      nowrap;
+}
+
+.route-time-input {
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    8px;
+  color:            var(--text-bright);
+  font-family:      var(--font-mono);
+  font-size:        calc(13px * var(--ui-scale));
+  padding:          6px 10px;
+  outline:          none;
+  transition:       border-color .18s;
+}
+
+.route-time-input:focus { border-color: var(--accent); }
+
+/* ══════════════════════════════════════════════════════════
+   AKTIONS-BUTTONS
+   ══════════════════════════════════════════════════════════ */
+.route-actions {
+  display:          flex;
+  flex-wrap:        wrap;
+  gap:              6px;
+  padding:          8px 14px 10px;
+}
+
+.route-btn {
+  flex:             1;
+  min-width:        120px;
+  padding:          9px 10px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    10px;
+  color:            var(--text-mid);
+  font-family:      var(--font-ui);
+  font-size:        calc(11px * var(--ui-scale));
+  font-weight:      700;
+  cursor:           pointer;
+  text-align:       center;
+  white-space:      nowrap;
+  transition:       background .18s, color .18s, border-color .18s;
+  letter-spacing:   0.05em;
+}
+
+.route-btn:hover    { background: var(--surface-3); color: var(--text-bright); }
+
+.route-btn.primary {
+  background:       var(--accent);
+  border-color:     var(--accent);
+  color:            #000;
+  letter-spacing:   0.05em;
+}
+
+.route-btn.primary:hover {
+  background:       #ff7a20;
+  border-color:     #ff7a20;
+}
+
+.route-btn-sm {
+  margin:           2px 14px 6px;
+  padding:          5px 12px;
+  background:       none;
+  border:           1px dashed var(--border);
+  border-radius:    8px;
+  color:            var(--text-muted);
+  font-size:        calc(11px * var(--ui-scale));
+  cursor:           pointer;
+  transition:       color .15s, border-color .15s;
+}
+
+.route-btn-sm:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── Tankwarnung ── */
+.route-warn {
+  margin:           4px 14px;
+  padding:          8px 12px;
+  background:       rgba(255, 51, 85, .1);
+  border:           1px solid rgba(255, 51, 85, .35);
+  border-radius:    8px;
+  font-size:        calc(11px * var(--ui-scale));
+  font-weight:      700;
+  line-height:      1.4;
+}
+
+/* ── Route Info-Bar ── */
+.route-info-bar {
+  display:          flex;
+  gap:              6px;
+  flex-wrap:        wrap;
+  padding:          6px 14px 4px;
+}
+
+.route-stat {
+  flex:             1;
+  min-width:        80px;
+  display:          flex;
+  flex-direction:   column;
+  align-items:      center;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    10px;
+  padding:          7px 8px;
+  gap:              2px;
+}
+
+.route-stat-val {
+  font-size:        calc(14px * var(--ui-scale));
+  font-weight:      700;
+  color:            var(--text-bright);
+  line-height:      1;
+}
+
+.route-stat-lbl {
+  font-size:        calc(10px * var(--ui-scale));
+  color:            var(--text-muted);
+  line-height:      1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SECTION TITLE + SEPARATOR
+   ══════════════════════════════════════════════════════════ */
+.route-section-title {
+  padding:          8px 14px 4px;
+  font-size:        calc(10px * var(--ui-scale));
+  font-weight:      700;
+  letter-spacing:   .08em;
+  text-transform:   uppercase;
+  color:            var(--text-muted);
+}
+
+.sheet-sep {
+  height:           1px;
+  background:       var(--border);
+  margin:           8px 14px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HÖHENPROFIL
+   ══════════════════════════════════════════════════════════ */
+#elevation-container {
+  padding:          0 0 6px;
+}
+
+.elev-wrap {
+  display:          flex;
+  align-items:      center;
+  gap:              6px;
+  padding:          0 14px;
+}
+
+.elev-svg {
+  flex:             1;
+  border-radius:    8px;
+  overflow:         visible;
+  cursor:           crosshair;
+}
+
+.elev-label-start,
+.elev-label-end {
+  font-family:      var(--font-mono);
+  font-size:        calc(9px * var(--ui-scale));
+  color:            var(--text-muted);
+  white-space:      nowrap;
+  flex-shrink:      0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   WETTER-TIMELINE
+   ══════════════════════════════════════════════════════════ */
+.wt-scroll {
+  display:          flex;
+  gap:              8px;
+  overflow-x:       auto;
+  padding:          4px 14px 8px;
+  scrollbar-width:  none;
+  -ms-overflow-style: none;
+}
+
+.wt-scroll::-webkit-scrollbar { display: none; }
+
+.wt-card {
+  flex-shrink:      0;
+  min-width:        64px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    10px;
+  padding:          7px 8px;
+  display:          flex;
+  flex-direction:   column;
+  align-items:      center;
+  gap:              3px;
+}
+
+.wt-time  { font-size: calc(9px  * var(--ui-scale)); color: var(--text-muted); }
+.wt-ico   { font-size: calc(18px * var(--ui-scale)); line-height: 1; }
+.wt-temp  { font-size: calc(12px * var(--ui-scale)); font-weight: 700; color: var(--text-bright); }
+.wt-rain  { font-size: calc(9px  * var(--ui-scale)); color: #3DB9FF; }
+.wt-grip  { font-size: calc(9px  * var(--ui-scale)); color: var(--text-muted); }
+
+/* ══════════════════════════════════════════════════════════
+   POI-BAR
+   ══════════════════════════════════════════════════════════ */
+.poi-bar {
+  display:          flex;
+  flex-wrap:        wrap;
+  gap:              6px;
+  padding:          4px 14px 10px;
+}
+
+.poi-btn {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              5px;
+  padding:          6px 10px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    8px;
+  color:            var(--text-mid);
+  font-family:      var(--font-ui);
+  font-size:        calc(11px * var(--ui-scale));
+  font-weight:      600;
+  cursor:           pointer;
+  transition:       background .18s, color .18s, border-color .18s;
+  white-space:      nowrap;
+}
+
+.poi-btn.loading {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-dim);
+  pointer-events: none;
+}
+
+.poi-btn.loading::after {
+  content: '';
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 2px solid var(--surface3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin-left: 6px;
+  animation: tc-spin 2s linear infinite;
+  vertical-align: middle;
+}
+
+
+.poi-btn.active {
+  background:       rgba(255, 98, 0, .15);
+  border-color:     var(--accent);
+  color:            var(--accent);
+}
+
+/* ── POI Popup ── */
+.poi-popup .leaflet-popup-content-wrapper {
+  background:       var(--surface);
+  border:           1px solid var(--border);
+  border-radius:    12px;
+  color:            var(--text-bright);
+  box-shadow:       0 8px 24px rgba(0,0,0,.5);
+  padding:          0;
+}
+
+.poi-popup .leaflet-popup-tip {
+  background:       var(--surface);
+}
+
+.poi-popup-inner {
+  padding:          10px 12px 4px;
+  min-width:        160px;
+}
+
+.poi-popup-header {
+  display:          flex;
+  align-items:      center;
+  gap:              6px;
+  margin-bottom:    4px;
+}
+
+.poi-popup-ico  { font-size: 18px; flex-shrink: 0; }
+
+.poi-popup-name {
+  font-size:        calc(15px * var(--ui-scale));
+  font-weight:      700;
+  color:            var(--text-bright);
+  line-height:      1.3;
+}
+
+.poi-route-dist {
+  font-size:        calc(9px * var(--ui-scale));
+  font-weight:      800;
+  color:            var(--accent);
+  letter-spacing:   .05em;
+  margin-bottom:    6px;
+}
+.poi-route-dist span { color: var(--text-bright); font-family: var(--font-mono); }
+
+.poi-popup-addr,
+.poi-popup-extra {
+  font-size:        calc(12px * var(--ui-scale));
+  color:            var(--text-mid);
+  line-height:      1.4;
+  margin-bottom:    4px;
+}
+
+.poi-tag {
+  font-size:        calc(10px * var(--ui-scale));
+  font-weight:      700;
+  color:            var(--text-muted);
+  margin-bottom:    3px;
+  display:          flex;
+  justify-content:  space-between;
+  gap:              10px;
+}
+.poi-tag span { color: var(--text-bright); font-weight: 600; text-align: right; }
+
+.poi-popup-extra-text {
+  font-size:        calc(11px * var(--ui-scale));
+  color:            var(--text-muted);
+  font-style:       italic;
+}
+
+/* ── Via-Punkt Button ── */
+.poi-via-btn {
+  display:          block;
+  width:            100%;
+  margin:           8px 0 6px;
+  padding:          7px 10px;
+  background:       var(--accent);
+  border:           none;
+  border-radius:    8px;
+  color:            #000;
+  font-family:      var(--font-ui);
+  font-size:        calc(12px * var(--ui-scale));
+  font-weight:      700;
+  cursor:           pointer;
+  text-align:       center;
+  transition:       background .18s;
+}
+
+.poi-via-btn:hover { background: #ff7a20; }
+
+/* ── POI Detail-Rows (normalisiertes Modell) ── */
+.poi-detail-section {
+  margin-top:   6px;
+  padding-top:  6px;
+  border-top:   1px solid var(--border);
+}
+
+.poi-detail-row {
+  display:          flex;
+  justify-content:  space-between;
+  align-items:      center;
+  gap:              8px;
+  margin-bottom:    3px;
+}
+
+.poi-detail-label {
+  font-size:    calc(10px * var(--ui-scale));
+  font-weight:  700;
+  color:        var(--text-muted);
+  flex-shrink:  0;
+}
+
+.poi-detail-value {
+  font-size:    calc(10px * var(--ui-scale));
+  font-weight:  600;
+  color:        var(--text-bright);
+  text-align:   right;
+}
+
+/* Statusbadges: JA / NEIN / UNBEKANNT */
+.poi-status {
+  display:        inline-flex;
+  align-items:    center;
+  font-size:      calc(10px * var(--ui-scale));
+  font-weight:    700;
+  padding:        1px 7px;
+  border-radius:  8px;
+  white-space:    nowrap;
+}
+
+.poi-status-yes     { background: rgba(0,204,136,.15); color: #00CC88; }
+.poi-status-no      { background: rgba(255,51,85,.12);  color: #FF3355; }
+.poi-status-unknown { background: rgba(255,255,255,.06); color: var(--text-muted);
+                      border: 1px solid var(--border); }
+
+/* Chip-Gruppen für Kraftstoffe / Services */
+.poi-chips-label {
+  font-size:     calc(10px * var(--ui-scale));
+  font-weight:   700;
+  color:         var(--text-muted);
+  margin-top:    4px;
+  margin-bottom: 2px;
+}
+
+.poi-chip-group {
+  display:     flex;
+  flex-wrap:   wrap;
+  gap:         3px;
+  margin-bottom: 4px;
+}
+
+.poi-chip {
+  font-size:     calc(10px * var(--ui-scale));
+  font-weight:   600;
+  padding:       2px 7px;
+  border-radius: 8px;
+  background:    var(--surface-2, var(--surface2));
+  border:        1px solid var(--border);
+  color:         var(--text-mid);
+  white-space:   nowrap;
+}
+
+/* Öffnungszeiten */
+.poi-hours {
+  font-family:   var(--font-mono, monospace);
+  font-size:     calc(10px * var(--ui-scale));
+  color:         var(--text-bright);
+  background:    var(--surface-2, var(--surface2));
+  border:        1px solid var(--border);
+  border-radius: 6px;
+  padding:       3px 8px;
+  margin-bottom: 4px;
+  word-break:    break-all;
+  line-height:   1.5;
+}
+
+/* Telefon-Link */
+.poi-tel-link {
+  color:           inherit;
+  text-decoration: none;
+  border-bottom:   1px dashed var(--accent);
+}
+   ══════════════════════════════════════════════════════════ */
+/* #rt-controls {
+  padding-bottom:   8px;
+}
+
+/* ── Kompass-Grid (3×3, Mitte leer) ── */
+.rt-compass-grid {
+  display:          grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:              5px;
+  padding:          0 14px;
+}
+
+.rt-dir-btn {
+  display:          flex;
+  flex-direction:   column;
+  align-items:      center;
+  justify-content:  center;
+  min-height:       44px;
+  padding:          4px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    8px;
+  color:            var(--text-bright);
+  font-size:        calc(16px * var(--ui-scale));
+  cursor:           pointer;
+  transition:       background .15s, border-color .15s, color .15s;
+}
+
+/* ── Fahnen-Marker (Start grün, Ziel kariert, Wegpunkt orange) ── */
+
+/* Leaflet-Wrapper: kein Schatten/Rand vom Container */
+.marker-flag-container {
+  background: transparent !important;
+  border: none !important;
+  will-change: transform;
+}
+
+.flag-marker {
+  position: relative;
+  width: 38px;
+  height: 46px;
+  pointer-events: auto;
+}
+
+/* Mast */
+.flag-pole {
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 3px;
+  height: 46px;
+  background: linear-gradient(180deg, #d0d0d0 0%, #888 60%, #555 100%);
+  border-radius: 1.5px;
+  box-shadow: 1px 0 2px rgba(0,0,0,0.3);
+}
+
+/* Schattenpunkt am Mastfuß */
+.flag-base {
+  position: absolute;
+  bottom: -1px;
+  left: 1px;
+  width: 9px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.45;
+}
+.flag-base-start { background: var(--go); }
+.flag-base-end   { background: #222; }
+
+/* Fahntuch: direkt unter dem Mastende */
+.flag-cloth {
+  position: absolute;
+  left: 7px;
+  top: 1px;
+  width: 28px;
+  height: 18px;
+  border-radius: 0 3px 3px 0;
+  transform-origin: left center;
+  box-shadow: 1px 2px 5px rgba(0,0,0,0.35);
+  animation: flag-wave 2s ease-in-out infinite;
+}
+
+/* Startfahne: grün mit hellem Streifen für Tiefe */
+.flag-cloth-start {
+  background: linear-gradient(160deg, #4ade80 0%, #16a34a 50%, #15803d 100%);
+}
+
+/* Zielfahne: kariertes Muster schwarz/weiß */
+.flag-cloth-end {
+  background-image: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%);
+  background-size: 7px 7px;
+  border: 1.5px solid #333;
+  border-left: none;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+/* Fahnen-Welle: simuliert Windbewegung */
+@keyframes flag-wave {
+  0%   { transform: skewY(-4deg) scaleX(1.00); }
+  20%  { transform: skewY(1deg)  scaleX(0.94); }
+  40%  { transform: skewY(4deg)  scaleX(1.02); }
+  60%  { transform: skewY(1deg)  scaleX(0.95); }
+  80%  { transform: skewY(-3deg) scaleX(1.01); }
+  100% { transform: skewY(-4deg) scaleX(1.00); }
+}
+
+/* Grüner Pulse-Ring beim Startmarker */
+.flag-cloth-start::after {
+  content: '';
+  position: absolute;
+  inset: -8px -14px -8px -14px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid var(--go);
+  opacity: 0;
+  animation: flag-pulse 2.2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes flag-pulse {
+  0%   { opacity: 0.5; transform: scale(0.6); }
+  100% { opacity: 0;   transform: scale(1.6); }
+}
+
+/* Wegpunkt-Marker (nummeriert, orange) */
+.map-marker-custom {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 900;
+  pointer-events: auto;
+  position: relative;
+}
+
+.marker-wp {
+  background: var(--accent) !important;
+  animation: marker-bounce 3s ease-in-out infinite;
+}
+
+@keyframes marker-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+
+/* ── Waypoint Dot ── */
+.wp-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-mid);
+  border: 2px solid var(--surface-2);
+  flex-shrink: 0;
+}
+
+.rt-dir-btn.active {
+  background:       rgba(255, 98, 0, .18);
+  border-color:     var(--accent);
+  color:            var(--accent);
+}
+
+.rt-dir-lbl { */
+  font-family:      var(--font-ui);
+  font-size:        calc(11px * var(--ui-scale));
+  font-weight:      700;
+  letter-spacing:   .04em;
+  line-height:      1;
+}
+
+/* ── Kurven-Intensität ── */ /*
+/* .rt-curve-seg {
+  display:          flex;
+  gap:              6px;
+  padding:          0 14px;
+}
+
+.rt-curve-seg .seg-btn {
+  flex:             1;
+  padding:          7px 6px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    8px;
+  color:            var(--text-mid);
+  font-family:      var(--font-ui);
+  font-size:        calc(11px * var(--ui-scale));
+  font-weight:      700;
+  cursor:           pointer;
+  text-align:       center;
+  white-space:      nowrap;
+  transition:       background .15s, border-color .15s, color .15s;
+}
+
+.rt-curve-seg .seg-btn.active {
+  background:       rgba(255, 98, 0, .18);
+  border-color:     var(--accent);
+  color:            var(--accent);
+} */
+
+/* ══════════════════════════════════════════════════════════
+   GESPEICHERTE ROUTEN
+   ══════════════════════════════════════════════════════════ */
+.saved-route-card {
+  margin:           8px 14px 0;
+  padding:          12px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    10px;
+  transition:       border-color .2s, box-shadow .2s;
+}
+
+.saved-route-card:hover { border-color: var(--accent-dim); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+.saved-route-head {
+  display:          flex;
+  justify-content:  space-between;
+  align-items:      flex-start;
+  margin-bottom:    10px;
+}
+
+.saved-route-info { cursor: pointer; flex: 1; }
+
+.route-tag {
+  font-size: 9px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+.saved-route-name {
+  font-size:        calc(13px * var(--ui-scale));
+  font-weight:      700;
+  color:            var(--text-bright);
+  line-height:      1.3;
+}
+
+.saved-route-del {
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; padding: 4px; font-size: 16px;
+  transition: color 0.2s;
+}
+.saved-route-del:hover { color: var(--danger); }
+
+.saved-route-actions {
+  display: flex;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.src-btn {
+  flex: 1;
+  padding: 6px 4px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-mid);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.src-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+
+.saved-route-actions {
+  display:          flex;
+  gap:              4px;
+  flex-shrink:      0;
+}
+
+.saved-route-btn {
+  padding:          4px 8px;
+  background:       none;
+  border:           1px solid var(--border);
+  border-radius:    6px;
+  color:            var(--text-muted);
+  font-size:        calc(10px * var(--ui-scale));
+  cursor:           pointer;
+  transition:       color .15s, border-color .15s;
+  white-space:      nowrap;
+}
+
+.saved-route-btn:hover          { color: var(--accent); border-color: var(--accent); }
+.saved-route-btn.del:hover      { color: #FF3355; border-color: #FF3355; }
+
+.saved-route-meta {
+  margin-top:       5px;
+  font-size:        calc(10px * var(--ui-scale));
+  color:            var(--text-muted);
+  display:          flex;
+  gap:              10px;
+  flex-wrap:        wrap;
+}
+
+.saved-routes-empty {
+  padding:          24px 14px;
+  text-align:       center;
+  color:            var(--text-muted);
+  font-size:        calc(13px * var(--ui-scale));
+  line-height:      1.6;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL-ERWEITERUNGEN (Share + Export)
+   ══════════════════════════════════════════════════════════ */
+.modal-section-title {
+  font-size:        calc(10px * var(--ui-scale));
+  font-weight:      700;
+  letter-spacing:   .08em;
+  text-transform:   uppercase;
+  color:            var(--text-muted);
+  margin-bottom:    6px;
+}
+
+.modal-hint {
+  font-size:        calc(11px * var(--ui-scale));
+  color:            var(--text-muted);
+  line-height:      1.5;
+  margin-top:       4px;
+}
+
+.modal-share-row {
+  display:          flex;
+  gap:              8px;
+  align-items:      center;
+  margin-top:       8px;
+}
+
+.modal-share-row .modal-input {
+  flex:             1;
+}
+
+.modal-export-btn {
+  display:          flex;
+  align-items:      center;
+  gap:              10px;
+  width:            100%;
+  padding:          11px 14px;
+  margin-bottom:    6px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    10px;
+  color:            var(--text-bright);
+  font-family:      var(--font-ui);
+  font-size:        calc(13px * var(--ui-scale));
+  font-weight:      600;
+  cursor:           pointer;
+  text-align:       left;
+  transition:       background .15s, border-color .15s;
+}
+
+.modal-export-btn:hover {
+  background:       var(--surface-3);
+  border-color:     var(--accent);
+}
+
+.modal-export-ico {
+  font-size:        20px;
+  flex-shrink:      0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEGMENT CONTROL (global – genutzt von Presets + Themen)
+   ══════════════════════════════════════════════════════════ */
+.theme-seg {
+  display:          flex;
+  gap:              6px;
+}
+
+.seg-btn {
+  flex:             1;
+  padding:          7px 6px;
+  background:       var(--surface-2);
+  border:           1px solid var(--border);
+  border-radius:    8px;
+  color:            var(--text-mid);
+  font-family:      var(--font-ui);
+  font-size:        calc(12px * var(--ui-scale));
+  font-weight:      700;
+  cursor:           pointer;
+  text-align:       center;
+  transition:       background .15s, border-color .15s, color .15s;
+}
+
+.seg-btn.active {
+  background:       rgba(255, 98, 0, .18);
+  border-color:     var(--accent);
+  color:            var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE – Landscape / größere Screens
+   ══════════════════════════════════════════════════════════ */
+@media (min-width: 480px) {
+  .route-actions    { gap: 8px; }
+  .rt-compass-grid  { max-width: 280px; margin: 0 auto; }
+  .wt-card          { min-width: 72px; }
+}
+
+@media (min-width: 768px) {
+  #route-panel      { max-height: 60vh; max-width: 420px; right: 16px; left: auto; }
+}

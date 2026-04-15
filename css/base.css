@@ -1,0 +1,108 @@
+/* ── TourCast base.css – Design-Tokens v2.0.0 (aligned v1.8.8) ── */
+
+@font-face {
+  font-family:'Rajdhani'; font-style:normal; font-weight:400; font-display:swap;
+  src:local('Rajdhani'), url('fonts/Rajdhani-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family:'Rajdhani'; font-style:normal; font-weight:500; font-display:swap;
+  src:local('Rajdhani Medium'), url('fonts/Rajdhani-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family:'Rajdhani'; font-style:normal; font-weight:600; font-display:swap;
+  src:local('Rajdhani SemiBold'), url('fonts/Rajdhani-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family:'Rajdhani'; font-style:normal; font-weight:700; font-display:swap;
+  src:local('Rajdhani Bold'), url('fonts/Rajdhani-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family:'Space Mono'; font-style:normal; font-weight:400; font-display:swap;
+  src:local('Space Mono'), url('fonts/SpaceMono-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family:'Space Mono'; font-style:normal; font-weight:700; font-display:swap;
+  src:local('Space Mono Bold'), url('fonts/SpaceMono-Bold.woff2') format('woff2');
+}
+
+/* ── LIGHT THEME (Standard – erzwungen) ── */
+:root {
+  /* Backgrounds */
+  --bg:           #EEF2F7;
+  --surface:      #FFFFFF;
+  --surface2:     #E4ECF5;
+  --surface3:     #D0DCE8;
+  --border:       rgba(0,0,0,0.10);
+  --border-hi:    rgba(0,0,0,0.20);
+  --panel-bg:     rgba(255,255,255,0.96);
+  --nav-bg:       rgba(238,242,247,0.95);
+  --overlay-dim:  rgba(10,20,40,0.65);
+
+  /* Brand */
+  --accent:       #D35400;
+  --accent-dim:   rgba(211,84,0,0.12);
+  --accent-glow:  rgba(211,84,0,0.25);
+  --amber:        #D97E24;
+
+  /* Text */
+  --text:         #2D3E50;
+  --text-bright:  #050A10;
+  --text-mid:     #3E5268;
+  --text-muted:   #5A738E;
+  --text-label:   #4A627A;
+
+  /* Status */
+  --go:           #008A4B;
+  --caution:      #966900;
+  --danger:       #C51B32;
+  --grip-warn:    #8E24AA;
+  --grip-wet:     #0277BD;
+  --grip-damp:    #0D7BB5;
+  --grip-dry:     #008A4B;
+
+  /* Layout */
+  --blur:         blur(22px) saturate(180%);
+  --sheet-peek:   62px;
+  --nav-h:        56px;
+  --header-h:     56px;
+  --tab-h:        56px;
+  --radius:       14px;
+  --radius-sm:    9px;
+  --ui-scale:     1;
+
+  /* ── Kompatibilitäts-Aliasse (β1–β12 CSS-Dateien) ── */
+  --gold:         #D35400;
+  --gold-dim:     rgba(211,84,0,0.12);
+  --green:        #008A4B;
+  --red:          #C51B32;
+  --yellow:       #966900;
+  --orange:       #D97E24;
+  --text-dim:     #5A738E;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   ⚠️ ALL MEDIA QUERIES REMOVED – LIGHT MODE ONLY
+   Media Queries für Dark-Mode oder OS Preferences wurden entfernt,
+   da Light-Mode jetzt hardcoded in index.html mit !important ist.
+   ──────────────────────────────────────────────────────────────── */
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+html, body {
+  width:100%; height:100%; overflow:hidden;
+  background:var(--bg); color:var(--text);
+  font-family:'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+
+button { font-family:'Rajdhani', 'Segoe UI', system-ui, sans-serif; }
+input  { font-family:'Rajdhani', 'Segoe UI', system-ui, sans-serif; }
+
+.mono {
+  font-family:'Space Mono', 'Courier New', monospace;
+}
+
+* { scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; }
+*::-webkit-scrollbar       { width:4px; height:4px; }
+*::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:2px; }

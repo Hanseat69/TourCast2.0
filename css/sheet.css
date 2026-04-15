@@ -1,0 +1,145 @@
+/* ── TourCast sheet.css – Bottom Sheet (8-Tage Vorschau) ── */
+
+#bottom-sheet {
+  position:   fixed;
+  bottom:     0; left:0; right:0;
+  z-index:    600;
+  background: var(--panel-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-top: 1px solid rgba(255,98,0,0.18);
+  border-radius: 16px 16px 0 0;
+  transform:  translateY(calc(100% - var(--sheet-peek)));
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+  max-height: 70vh;
+  display:    flex;
+  flex-direction:column;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+#bottom-sheet.open {
+  transform: translateY(0);
+}
+
+/* ── Pull Handle ── */
+.sheet-pull {
+  flex-shrink: 0;
+  display:     flex;
+  flex-direction:column;
+  align-items: center;
+  gap:         4px;
+  padding:     10px 16px 8px;
+  cursor:      pointer;
+  user-select: none;
+  -webkit-user-select:none;
+}
+
+.sheet-knob {
+  width:        36px;
+  height:       4px;
+  background:   var(--border-hi);
+  border-radius:2px;
+  transition:   background .2s;
+}
+.sheet-pull:hover .sheet-knob { background:var(--accent); }
+
+.sheet-title {
+  font-size:   calc(11px * var(--ui-scale));
+  font-weight: 700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:       var(--text-muted);
+  display:     flex;
+  align-items: center;
+  gap:         4px;
+}
+.sheet-arrow {
+  font-style:  normal;
+  transition:  transform .3s;
+  color:       var(--text-muted);
+}
+#bottom-sheet.open .sheet-arrow { transform:rotate(180deg); }
+
+/* ── Sheet Body ── */
+.sheet-body {
+  flex:       1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:    4px 0 12px;
+  scrollbar-width:none;
+}
+.sheet-body::-webkit-scrollbar { display:none; }
+
+/* ── Vorschau-Struktur ── */
+.cond-section-title {
+  padding:      8px 14px 6px;
+  font-size:    calc(10px * var(--ui-scale));
+  font-weight:  800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color:        var(--text-label);
+}
+
+.cond-row, .forecast-row {
+  display:      flex;
+  gap:          8px;
+  overflow-x:   auto;
+  padding:      0 14px 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cond-row::-webkit-scrollbar, .forecast-row::-webkit-scrollbar { display: none; }
+
+.cond-card {
+  flex:         1;
+  min-width:    82px;
+  background:   var(--surface-2);
+  border:       1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:      10px 8px;
+  display:      flex;
+  flex-direction: column;
+  align-items:  center;
+  gap:          4px;
+}
+
+.cond-val {
+  font-family:  var(--font-mono);
+  font-size:    calc(13px * var(--ui-scale));
+  font-weight:  700;
+  color:        var(--text-bright);
+}
+
+.cond-lbl {
+  font-size:    calc(8px * var(--ui-scale));
+  font-weight:  800;
+  color:        var(--text-muted);
+  letter-spacing: .05em;
+}
+
+.day-card {
+  min-width:    72px;
+  background:   var(--surface-2);
+  border:       1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:      10px 6px;
+  display:      flex;
+  flex-direction: column;
+  align-items:  center;
+  gap:          6px;
+  position:     relative;
+}
+.day-card.today { border-color: var(--accent); background: var(--accent-dim); }
+
+.day-name { font-size: calc(12px * var(--ui-scale)); font-weight: 800; color: var(--text-label); }
+.day-temps { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.day-hi { font-family: var(--font-mono); font-size: calc(15px * var(--ui-scale)); font-weight: 700; color: var(--text-bright); }
+.day-lo { font-family: var(--font-mono); font-size: calc(12px * var(--ui-scale)); color: var(--text-muted); }
+.day-rain { font-family: var(--font-mono); font-size: calc(11px * var(--ui-scale)); color: var(--grip-wet); font-weight: 700; }
+.day-wind { font-size: calc(10px * var(--ui-scale)); color: var(--text-muted); font-weight: 600; }
+.day-gear { font-size: calc(9px * var(--ui-scale)); color: var(--accent); font-weight: 800; letter-spacing: 0.05em; margin-top: 2px; text-transform: uppercase; }
+.day-sun  { font-size: calc(10px * var(--ui-scale)); color: var(--text-label); font-weight: 700; letter-spacing: 0.02em; margin-top: 1px; }
+.day-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 2px; }

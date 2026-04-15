@@ -1,0 +1,343 @@
+/* ═══════════════════════════════════════════════════════
+   TourCast 2.0 – style.css
+   Erstellt: Modal z-index Fix + Basis-Korrekturen
+   ═══════════════════════════════════════════════════════ */
+
+
+/* ── Globale UI-Variablen ── */
+/* ── Grip-Farbskala Definitionen ── */
+:root {
+  --grip-dry:      #00FF87; /* Sattes Grün */
+  --grip-damp:     #7DD3FC; /* Hellblau */
+  --grip-wet:      #2563EB; /* Tiefblau */
+  --grip-warn:     #FFB300; /* Kräftiges Gelb/Orange (Schmierfilm) */
+  --grip-critical: #FF0033; /* Intensives Alarm-Rot (Unwetter) */
+  --danger:        #FF3355;
+  --font-size-badge: 13px; /* Standard-Schriftgröße für Badges */
+}
+
+
+/* ── GoNoGo Modal – über alle Leaflet-Layer ─────────── */
+#go-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* ── Optimierte Status-Bubble (Oben Rechts) ─────────── */
+.status-bubble-container {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.9));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+/* ── Unwetter-Warnung: Formänderung und Icon ── */
+.status-bubble-container.has-warning {
+  border-radius: 8px; /* Eckiger Look signalisiert Gefahr */
+  border: 2px solid #ff3355;
+  padding: 6px 16px;
+  background: rgba(255, 0, 0, 0.2);
+  animation: warning-shake 3s infinite; /* Markanter Shake-Effekt */
+}
+
+.status-bubble-container.has-warning::after {
+  content: '⚠️';
+  margin-left: 8px;
+  font-size: 16px;
+  filter: drop-shadow(0 0 5px rgba(255, 51, 85, 0.6));
+}
+
+@keyframes warning-shake {
+  0%, 90%, 100% { transform: translateX(0); }
+  92%, 96% { transform: translateX(-3px); }
+  94%, 98% { transform: translateX(3px); }
+}
+
+.status-bubble-container:active {
+  transform: scale(0.95);
+}
+
+/* Pulsieren bei Gefahr */
+.status-danger {
+  animation: status-pulse 2s infinite;
+  border-color: rgba(255, 51, 85, 0.4);
+}
+
+@keyframes status-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 51, 85, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 51, 85, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 51, 85, 0); }
+}
+
+#go-lbl {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-size: var(--font-size-badge);
+}
+
+#go-modal-overlay.hidden,
+#go-modal-overlay[style*="display: none"],
+#go-modal-overlay[style*="display:none"] {
+  display: none !important;
+}
+
+#go-modal-box {
+  position: relative;
+  z-index: 10000;
+  max-width: 440px;
+  width: 90%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+
+/* ── Leaflet-Layer z-index begrenzen ─────────────────── */
+/* Verhindert dass Karten-Overlays über dem Modal liegen */
+.leaflet-pane {
+  z-index: 400 !important;
+}
+
+.leaflet-tile-pane    { z-index: 200 !important; }
+.leaflet-shadow-pane  { z-index: 500 !important; }
+.leaflet-overlay-pane { z-index: 400 !important; }
+.leaflet-marker-pane  { z-index: 600 !important; }
+.leaflet-tooltip-pane { z-index: 650 !important; }
+.leaflet-popup-pane   { z-index: 700 !important; }
+
+
+/* ── GoNoGo Dot – Statusindikator korrigieren ──────── */
+.gng-dot {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
+}
+
+/* Radar-Canvas und SVG-Overlays unter dem Modal halten */
+.leaflet-overlay-pane canvas,
+.leaflet-overlay-pane svg {
+  z-index: 400 !important;
+}
+
+
+/* ── Ladescreen ───────────────────────────────────────── */
+#loader-screen,
+#loader,
+.loader-overlay {
+  z-index: 8000;
+}
+
+
+/* ── Allgemeine UI-Panels über der Karte ────────────── */
+.panel,
+.side-panel,
+.bottom-sheet,
+.floating-card {
+  position: relative;
+  z-index: 1000;
+}
+/* ── GoNoGo Button – NO-GO Icon auf der Karte entfernen ── */
+/* #go-lbl {
+  display: none !important;
+} */
+
+/* ── GoNoGo Modal – roter Punkt im Modal-Header entfernen ─ */
+/* #go-modal-box .gng-dot {
+  display: none !important;
+} */
+
+/* ── Status Bubble – go-dot sichtbar lassen, Größe fixieren ── */
+#go-dot {
+  display: block !important;
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  min-height: 12px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  background: var(--status-clr);
+  box-shadow: 0 0 10px var(--status-clr);
+}
+
+/* ── Rundtour UI ────────────────────────────────────── */
+.rt-compass-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 14px;
+  margin-bottom: 16px;
+}
+
+.rt-dir-btn {
+  background: var(--surface-2, rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 5px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.rt-dir-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rt-dir-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(255, 98, 0, 0.3);
+}
+
+.rt-dir-lbl {
+  font-weight: 800;
+  font-size: 14px;
+  font-family: var(--font-mono);
+}
+
+.rt-curve-seg {
+  display: flex;
+  gap: 2px;
+  padding: 0 14px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  margin: 0 14px 16px;
+  overflow: hidden;
+}
+
+/* ── Zufall-Button Animation ────────────────────────── */
+.btn-random:hover {
+  animation: dice-wiggle 0.4s ease-in-out;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes dice-wiggle {
+  0%   { transform: rotate(0deg) scale(1); }
+  20%  { transform: rotate(-8deg) scale(1.05); }
+  40%  { transform: rotate(8deg) scale(1.05); }
+  60%  { transform: rotate(-8deg) scale(1.05); }
+  80%  { transform: rotate(8deg) scale(1.05); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.btn-random:active {
+  transform: scale(0.95);
+}
+
+/* ── TomTom Help Box (Export Modal) ── */
+.tt-help-box {
+  margin: 16px 0 10px;
+  padding: 14px;
+  background: rgba(255, 98, 0, 0.06);
+  border: 1px dashed rgba(255, 98, 0, 0.4);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-mid);
+}
+
+.tt-help-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.tt-help-list {
+  margin: 10px 0 0 18px;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.tt-help-list li { margin-bottom: 6px; }
+.tt-help-list li strong { color: var(--text-bright); }
+.tt-help-list a { color: var(--accent); text-decoration: underline; }
+.tt-help-list code { 
+  background: rgba(255, 255, 255, 0.1); 
+  padding: 2px 5px; 
+  border-radius: 4px; 
+  font-family: var(--font-mono); 
+  font-size: 0.8rem;
+}
+
+/* ── Optimierter Toast (Kontrast & Lesbarkeit) ── */
+.toast {
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+  border: 2px solid var(--danger) !important; /* Markanter roter Rahmen für Fehler */
+  padding: 16px 24px !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7) !important;
+  letter-spacing: 0.3px;
+  max-width: 85vw;
+  line-height: 1.4;
+  border-radius: 12px !important;
+  text-transform: uppercase;
+}
+
+.toast.success {
+  border-color: var(--grip-dry) !important; /* Grüner Rahmen für Erfolg */
+}
+
+/* Animation an die längere Dauer anpassen (6s) */
+@keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+@keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+.toast.show {
+  animation: fadein 0.4s, fadeout 0.5s 5.5s !important;
+}
+
+/* ── Collapsible Section für Schwellenwerte ── */
+.collapsible-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.collapsible-trigger:hover { background: rgba(255,255,255,0.03); }
+
+.chevron-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--accent);
+}
+.collapsed .chevron-icon { transform: rotate(-90deg); }
+
+.collapsible-content {
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, opacity 0.3s;
+}
+.collapsed + .collapsible-content { max-height: 0; opacity: 0; pointer-events: none; }

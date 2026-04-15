@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TourCast Pro</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; font-src 'self' data:; img-src 'self' data: https: blob:; connect-src 'self' https:;">
+  
+  <!-- ════════════════════════════════════════════════════════════════════
+       LIGHT MODE ERZWINGUNG – MUSS VOR ALLEN ANDEREN STYLES KOMMEN!
+       ════════════════════════════════════════════════════════════════════ -->
+  <style>
+    /* BRUTAL: Light-Mode mit !important für alle Elemente */
+    :root {
+      --bg:           #EEF2F7 !important;
+      --surface:      #FFFFFF !important;
+      --surface2:     #E4ECF5 !important;
+      --surface3:     #D0DCE8 !important;
+      --surface-2:    #E4ECF5 !important;
+      --surface-3:    #D0DCE8 !important;
+      --border:       rgba(0,0,0,0.10) !important;
+      --border-hi:    rgba(0,0,0,0.20) !important;
+      --panel-bg:     rgba(255,255,255,0.96) !important;
+      --nav-bg:       rgba(238,242,247,0.95) !important;
+      --overlay-dim:  rgba(10,20,40,0.65) !important;
+      --accent:       #D35400 !important;
+      --accent-dim:   rgba(211,84,0,0.12) !important;
+      --accent-glow:  rgba(211,84,0,0.25) !important;
+      --amber:        #D97E24 !important;
+      --text:         #2D3E50 !important;
+      --text-bright:  #050A10 !important;
+      --text-mid:     #3E5268 !important;
+      --text-muted:   #5A738E !important;
+      --text-label:   #4A627A !important;
+      --go:           #008A4B !important;
+      --caution:      #966900 !important;
+      --danger:       #C51B32 !important;
+      --grip-warn:    #8E24AA !important;
+      --grip-wet:     #0277BD !important;
+      --grip-damp:    #0D7BB5 !important;
+      --grip-dry:     #008A4B !important;
+    }
+
+    html, body {
+      background-color: #EEF2F7 !important;
+      color: #2D3E50 !important;
+      color-scheme: light only !important;
+    }
+
+    /* Überlagere ALLE Media Queries */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #EEF2F7 !important;
+        --surface:      #FFFFFF !important;
+        --text:         #2D3E50 !important;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg:           #EEF2F7 !important;
+        --surface:      #FFFFFF !important;
+        --text:         #2D3E50 !important;
+      }
+    }
+  </style>
+  
+  <script>
+    console.log('🎯 index.html script section starting');
+    const APP = {
+      NAME:           'TourCast Pro',
+      VERSION:        'v2.0.0-W11',
+      openmeteo:      'https://api.open-meteo.com/v1/forecast',
+      overpass:       'https://overpass-api.de/api/interpreter',
+      elevationApi:   'https://api.open-meteo.com/v1/elevation',
+      orsApi:         'https://api.openrouteservice.org/v2/directions/driving-car',
+      orsKey:         null, // Wird von electron oder env geladen
+      nominatim:      'https://nominatim.openstreetmap.org',
+      RADIUSKM:       150,
+      defaultZoom:    11,
+      defaultCenter:  [48.1374, 11.5755],
+      graphhopperEnabled: false
+    };
+
+    // Initialisiere ORS-Key: erst aus Electron-IPC (.env), dann Env-Variable, dann null
+    async function initializeOrsKey() {
+      // 1. Electron IPC → liest aus .env via main process
+      if (window.electronAPI?.invoke) {
+        try {
+          const cfg = await window.electronAPI.invoke('get-config');
+          if (cfg?.orsKey) { APP.orsKey = cfg.orsKey; return; }
+        } catch(e) { /* IPC nicht verfügbar */ }
+      }
+      // 2. Direkte Env-Variable (Browser-PWA-Modus)
+      if (typeof process !== 'undefined' && process.env?.ORS_API_KEY) {
+        APP.orsKey = process.env.ORS_API_KEY;
+        return;
+      }
+      // 3. Kein Key gefunden
+      APP.orsKey = null;
+      console.warn('⚠️ ORS API-Key nicht gefunden. Bitte .env-Datei anlegen.');
+    }
+    
+    // Rufe auf wenn DOM bereit ist
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeOrsKey);
+    } else {
+      initializeOrsKey();
+    }
+  </script>
+
+  <!-- Lucide Icons & Schriftarten -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Leaflet Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  
+  <!-- Lokale Fonts -->
+  <style>
+    @font-face {
+      font-family:'Rajdhani';font-weight:400;font-display:swap;
+      src:local('Rajdhani'),url('fonts/Rajdhani-Regular.woff2') format('woff2');
+    }
+    @font-face {
+      font-family:'Rajdhani';font-weight:600;font-display:swap;
+      src:local('Rajdhani SemiBold'),url('fonts/Rajdhani-SemiBold.woff2') format('woff2');
+    }
+    @font-face {
+      font-family:'Rajdhani';font-weight:700;font-display:swap;
+      src:local('Rajdhani Bold'),url('fonts/Rajdhani-Bold.woff2') format('woff2');
+    }
+    @font-face {
+      font-family:'Space Mono';font-weight:400;font-display:swap;
+      src:local('Space Mono'),url('fonts/SpaceMono-Regular.woff2') format('woff2');
+    }
+    @font-face {
+      font-family:'Space Mono';font-weight:700;font-display:swap;
+      src:local('Space Mono Bold'),url('fonts/SpaceMono-Bold.woff2') format('woff2');
+    }
+  </style>
+
+  <!-- App-CSS (Basiskonfiguration) – Light-Mode Standard -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/maplayers.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/sheet.css">
+  <link rel="stylesheet" href="css/route.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/w11-fluent.css">
+  <style>
+    /* Windows 11 Fluent UI / Mica Integration */
+    .w11-nav {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: 64px !important;
+      z-index: 2000 !important;
+      background: rgba(238, 242, 247, 0.97) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(125%) !important;
+      backdrop-filter: blur(30px) saturate(125%) !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+      display: flex !important;
+      align-items: center !important;
+      padding: 0 16px !important;
+      -webkit-app-region: drag; /* Erlaubt das Verschieben des Fensters */
+    }
+
+    .nav-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      -webkit-app-region: no-drag;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--accent);
+      text-transform: none; /* Mixed Case wie im Fenstertitel */
+      letter-spacing: 1.5px;
+    }
+
+    .nav-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .w11-btn {
+      background: rgba(0, 0, 0, 0.04) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      color: var(--text-mid) !important;
+      padding: 8px 16px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      -webkit-app-region: no-drag;
+    }
+
+    .w11-btn:hover { 
+      background: rgba(0, 0, 0, 0.08) !important;
+      color: var(--text) !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+    }
+    .w11-btn.active { 
+      background: var(--accent-dim) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+    }
+
+    /* Windows Window Controls */
+    .window-controls {
+      display: flex;
+      margin-left: 12px;
+      -webkit-app-region: no-drag;
+    }
+    .win-ctrl-btn {
+      width: 46px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--text-mid);
+      cursor: default;
+      transition: background 0.15s;
+    }
+    .win-ctrl-btn:hover { background: rgba(0, 0, 0, 0.05); color: var(--text) !important; }
+    .win-ctrl-btn.close:hover { background: #e81123; color: #fff; }
+
+    /* Status Bubble Position anpassen (unter die Nav verschieben) */
+    .status-bubble-container {
+      top: 78px !important;
+      right: 16px !important;
+    }
+  </style>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- FINAL LIGHT MODE ENFORCEMENT – LOADED LAST TO OVERRIDE EVERYTHING -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+</head>
+<body class="w11-desktop">
+  <script>
+    // Debug-Status wird nicht mehr angezeigt
+  </script>
+
+  <!-- Loader (für das Logo beim Start) -->
+  <div id="loader"><div class="ld-logo">TourCast Pro</div><div id="loader-msg"></div></div>
+
+  <div id="map"></div>
+
+  <nav class="w11-nav">
+    <div class="nav-drag-region"></div>
+    <div class="nav-content">
+      <div class="nav-brand">
+        <img src="icons/icon-512.png" alt="Logo" class="icon-28">
+        <span>TourCast Pro</span>
+      </div>
+      <div class="nav-group">
+        <button class="w11-btn" id="btn-nav-toggle" onclick="openABPlanner()">
+          <i data-lucide="navigation"></i> Planer
+        </button>
+        <button class="w11-btn" data-layer="grip" onclick="switchLayer('grip', this)">
+          <i data-lucide="layers"></i> Grip-Map
+        </button>
+        <button class="w11-btn" data-layer="radar" onclick="switchLayer('radar', this)">
+          <i data-lucide="cloud-rain"></i> Radar
+        </button>
+        <button class="w11-btn" id="nav-btn-weather" data-layer="sun" onclick="switchLayer('sun', this)">
+          <i data-lucide="sun-medium"></i> Wetter
+        </button>
+        <button class="w11-btn" onclick="openExportModal()" title="Tour für Navi exportieren">
+          <i data-lucide="download"></i> Tour Export
+        </button>
+        <button class="w11-btn" id="gps-refresh-btn" onclick="manualGPSRefresh()" title="Position aktualisieren">
+          <i data-lucide="map-pin"></i> GPS
+        </button>
+        <button class="w11-btn" onclick="openSettings()" title="Einstellungen">
+          <i data-lucide="settings"></i>
+        </button>
+        <button class="w11-btn" onclick="openHelp()" title="Hilfe">
+          <i data-lucide="help-circle"></i>
+        </button>
+        <button class="w11-btn" onclick="manualRefresh()" title="Daten aktualisieren">
+          <i data-lucide="rotate-cw"></i>
+        </button>
+      </div>
+      <div class="window-controls">
+        <button class="win-ctrl-btn" onclick="window.electronAPI.minimize()" title="Minimieren"><i data-lucide="minus" class="icon-16"></i></button>
+        <button class="win-ctrl-btn" onclick="window.electronAPI.maximize()" title="Maximieren"><i data-lucide="square" class="icon-14"></i></button>
+        <button class="win-ctrl-btn close" onclick="window.electronAPI.close()" title="Schließen"><i data-lucide="x" class="icon-16"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Status Bubble (übernommen aus PWA) -->
+  <div id="status-bubble" class="status-bubble-container" onclick="openGoModal()">
+    <div id="go-dot" class="gng-dot"></div>
+    <div id="temp-pill">-- °C</div>
+    <div id="go-lbl">--</div>
+  </div>
+
+  <!-- ── RADAR BADGE ── -->
+  <div id="radar-badge"></div>
+
+  <!-- ── UMWELT-PANEL (Zusammenfassung Sonne & AQI) ── -->
+  <div id="env-panel" class="hidden">
+    <div class="sp-header">Umwelt &amp; Sonne</div>
+    <div class="sp-times">
+      <div class="sp-time-card">
+        <div class="sp-time-label-top">AUFGANG</div>
+        <div class="sp-time-val" id="sp-rise">--:--</div>
+      </div>
+      <div class="sp-time-card">
+        <div class="sp-time-label-top">UNTERGANG</div>
+        <div class="sp-time-val" id="sp-set">--:--</div>
+      </div>
+    </div>
+    <div class="sp-divider"></div>
+    <div class="sp-row">
+      <div class="sp-label">Wind / Böen</div>
+      <div class="env-val-row">
+        <div class="sp-val">
+          <span id="sp-wind-combined">-- / --</span>
+          <span id="sp-wind-warn-icon" class="wind-warn-icon hidden">⚠️</span>
+        </div>
+        <div class="sp-badge" id="sp-wind-badge">--</div>
+      </div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-label">UV-Index</div>
+      <div class="env-val-row">
+        <div class="sp-val" id="sp-uv">--</div>
+        <div class="sp-badge" id="sp-uv-badge">--</div>
+      </div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-label">Sichtweite</div>
+      <div class="env-val-row">
+        <div class="sp-val"          id="sp-vis">-- km</div>
+        <div class="sp-badge sp-ok"  id="sp-vis-badge">--</div>
+      </div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-label">Hitzebelastung</div>
+      <div class="env-val-row">
+        <div class="sp-val"          id="sp-heat">-- °C</div>
+        <div class="sp-badge sp-ok"  id="sp-heat-badge">--</div>
+      </div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-label">Windchill</div>
+      <div class="env-val-row">
+        <div class="sp-val" id="sp-wc">-- °C</div>
+        <div class="sp-badge" id="sp-wc-badge">--</div>
+      </div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-label">Bekleidung</div>
+      <div class="sp-val gear-display" id="sp-gear">--</div>
+    </div>
+    <div id="sp-glare-row" class="sp-row hidden">
+      <div class="sp-label">Blendgefahr</div>
+      <div class="sp-badge sp-warn">AKTIV</div>
+    </div>
+
+    <div class="sp-divider"></div>
+    <div class="aqi-title">Luftqualität</div>
+    <div class="sp-row">
+      <div class="sp-label">Index (AQI)</div>
+      <div class="aqi-val" id="aqi-val">--</div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-label">Feinstaub (PM2.5)</div>
+      <div class="sp-val" id="aqi-pm25">-- µg</div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-label">Ozon (O₃)</div>
+      <div class="sp-val" id="aqi-o3">-- µg</div>
+    </div>
+    <div id="aqi-label-row" class="aqi-label-row">
+      <div id=\"aqi-label\" class=\"sp-badge\">--</div>
+    </div>
+
+    <div class="sp-divider sp-tip-div" id="sp-tip-div"></div>
+    <div id="sp-tip" class="env-tip-box"></div>
+  </div>
+
+  <!-- ── GRIP LEGEND ── -->
+  <div id="grip-legend" class="hidden">
+    <div class="lg-row"><div class="lg-dot lg-dot-warn"></div> Schmierfilm-Risiko</div>
+    <div class="lg-row"><div class="lg-dot lg-dot-wet"></div> Nasse Fahrbahn</div>
+    <div class="lg-row"><div class="lg-dot lg-dot-drying"></div> Trocknet ab</div>
+    <div class="lg-row"><div class="lg-dot lg-dot-dry"></div> Trockene Fahrbahn</div>
+  </div>
+
+  <!-- ── GRIP TIME SLIDER ── -->
+  <div id="grip-time-bar" class="hidden">
+    <div class="gt-header">
+      <span class="gt-label">Vorschau</span>
+      <span class="gt-time" id="gt-time-disp">Jetzt</span>
+      <button class="gt-now-btn" onclick="gripTimeNow()">Jetzt</button>
+    </div>
+    <input type="range" id="grip-time-slider" class="tc-range" aria-label="Zeitversatz Vorschau"
+           min="0" max="12" step="1" value="0"
+           oninput="setGripTimeOffset(this.value)">
+  </div>
+
+  <!-- Notwendige UI-Container für die JS-Module -->
+  <div id="route-panel" class="panel-hidden">
+    <div id="tab-bar"></div>
+    <div id="tab-route" class="tab-panel active">
+        <div id="ab-controls">
+            <!-- Strukturierte Adresssuche START -->
+            <div class="route-search-row">
+              <div class="route-section-title route-section-no-padding">🟢 Startpunkt</div>
+              <div class="addr-grid">
+                <button class="flag-btn" id="flag-from" onclick="toggleCountryPicker('from')">🇩🇪</button>
+                <input type="text" id="street-from" class="route-input" placeholder="Straße" oninput="tcAutocomplete(this,'from')">
+                <input type="text" id="nr-from" class="route-input" placeholder="Nr." oninput="tcAutocomplete(this,'from')">
+              </div>
+              <div class="addr-grid-sub">
+                <input type="text" id="zip-from" class="route-input" placeholder="PLZ" oninput="tcAutocomplete(this,'from')">
+                <input type="text" id="city-from" class="route-input" placeholder="Ort" oninput="tcAutocomplete(this,'from')">
+                <div class="addr-tools">
+                  <button class="addr-tool-btn" onclick="startMapPick('from')" title="Karte">📍</button>
+                  <button class="addr-tool-btn" onclick="useCurrentLocation('from')" title="GPS">🎯</button>
+                </div>
+              </div>
+              <div class="autocomplete-list" id="ac-from"></div>
+              <!-- Versteckter Country-Picker Start -->
+              <div id="picker-from" class="country-picker-dropdown"></div>
+            </div>
+
+            <!-- Strukturierte Adresssuche ZIEL -->
+            <div class="route-search-row route-search-section">
+              <div class="route-section-title route-section-no-padding">🔴 Ziel</div>
+              <div class="addr-grid">
+                <button class="flag-btn" id="flag-to" onclick="toggleCountryPicker('to')">🇩🇪</button>
+                <input type="text" id="street-to" class="route-input" placeholder="Straße" oninput="tcAutocomplete(this,'to')">
+                <input type="text" id="nr-to" class="route-input" placeholder="Nr." oninput="tcAutocomplete(this,'to')">
+              </div>
+              <div class="addr-grid-sub">
+                <input type="text" id="zip-to" class="route-input" placeholder="PLZ" oninput="tcAutocomplete(this,'to')">
+                <input type="text" id="city-to" class="route-input" placeholder="Ort" oninput="tcAutocomplete(this,'to')">
+                <div class="addr-tools">
+                  <button class="addr-tool-btn" onclick="startMapPick('to')" title="Karte">📍</button>
+                  <button class="addr-tool-btn" onclick="useCurrentLocation('to')" title="GPS">🎯</button>
+                </div>
+              </div>
+              <div class="autocomplete-list" id="ac-to"></div>
+              <!-- Versteckter Country-Picker Ziel -->
+              <div id="picker-to" class="country-picker-dropdown"></div>
+            </div>
+
+            <!-- Waypoints (Drag & Drop) -->
+            <div id="waypoint-list"></div>
+            <button class="route-btn-sm" onclick="addWaypoint()">
+              ＋ Zwischenziel
+            </button>
+
+            <!-- Avoid-Optionen -->
+            <div class="avoid-row">
+              <button id="btn-avoid-highways" class="avoid-btn" onclick="toggleAvoid('highways')">🛣️ Autobahn</button>
+              <button id="btn-avoid-tolls" class="avoid-btn" onclick="toggleAvoid('tolls')">💶 Maut</button>
+              <button id="btn-avoid-ferries" class="avoid-btn" onclick="toggleAvoid('ferries')">⛴️ Fähren</button>
+            </div>
+
+            <!-- Abfahrtszeit -->
+            <div class="route-depart-row">
+              <span class="route-depart-lbl">🕐 Abfahrt</span>
+              <input type="time" id="departure-time" class="route-time-input" aria-label="Abfahrtszeit" onchange="onDepartureTimeChange(this.value)">
+            </div>
+
+            <!-- Aktionen -->
+            <div class="route-actions">
+              <button class="route-btn primary" onclick="calculateRoute()">🗺️ Route berechnen</button>
+              <button class="route-btn" onclick="reverseABRoute()" id="btn-reverse-route">🔃 Route umkehren</button>
+              <button class="route-btn" onclick="importGPX()">📥 GPX Import</button>
+              <button class="route-btn display-none" onclick="openExportModal()" id="btn-export-route">📤 Exportieren</button>
+              <button class="route-btn display-none" onclick="promptSaveRoute()" id="btn-save-route">💾 Speichern</button>
+            </div>
+        </div>
+        <div id="rt-controls"></div>
+
+        <!-- Route-Infos (A→B) -->
+        <div id="route-info-bar-ab" class="route-info-bar route-info-bar-hidden"></div>
+        <div id="bar-weather" class="weather-timeline"></div>
+        <div id="route-tank-warn" class="route-tank-warn-hidden route-warn"></div>
+
+        <!-- Höhenprofil -->
+        <div id="elevation-container" class="elevation-hidden">
+          <div class="route-section-title">Höhenprofil</div>
+          <div class="elev-wrap">
+            <span class="elev-label-start mono"></span>
+            <svg id="elevation-svg" class="elev-svg" width="100%" height="80"></svg>
+            <span class="elev-label-end mono"></span>
+          </div>
+        </div>
+
+        <!-- Wetter-Timeline -->
+        <div id="weather-timeline-container" class="weather-timeline">
+          <div class="route-section-title">Wetter entlang der Route</div>
+          <div class="wt-scroll" id="wt-scroll"></div>
+        </div>
+
+        <!-- POI-Bar -->
+        <div class="route-section-title mt-8">POIs entlang der Route</div>
+        <div id="poi-bar" class="poi-bar"></div>
+    </div>
+
+    <!-- Archiv-Tab -->
+    <div id="tab-saved" class="tab-panel">
+      <div class="route-section-title">💾 Gespeicherte Routen</div>
+      <div id="saved-routes-list"></div>
+    </div>
+  </div>
+
+  <!-- ── MODALS ── -->
+  
+  <!-- Go/No-Go Detail -->
+  <div id="go-modal-overlay" class="modal-overlay" onclick="if(event.target.id==='go-modal-overlay')closeGoModal()">
+    <div id="go-modal-box" class="modal-box"></div>
+  </div>
+
+  <!-- Routen-Segment Details -->
+  <div id="segment-modal-overlay" class="modal-overlay" onclick="if(event.target.id==='segment-modal-overlay')closeSegmentModal()">
+    <div id="segment-modal-box" class="modal-box"></div>
+  </div>
+
+  <!-- Grip-Heatmap Punkt Details -->
+  <div id="grip-point-modal-overlay" class="modal-overlay" onclick="if(event.target.id==='grip-point-modal-overlay')closeGripPointModal()">
+    <div id="grip-point-modal-box" class="modal-box"></div>
+  </div>
+
+  <!-- Einstellungen -->
+  <div id="settings-overlay" class="modal-overlay" onclick="if(event.target.id==='settings-overlay')closeSettings()">
+    <div class="modal-box">
+      <div class="modal-title" id="settings-title">Einstellungen</div>
+      <div id="settings-menu-main">
+        <button class="modal-export-btn" onclick="openProfileSettings()">👤 Fahrerprofil</button>
+        <button class="modal-export-btn" onclick="openLogsView()">📋 System Logs</button>
+      </div>
+      <div id="settings-profile-view" class="hidden">
+        <button class="route-btn-sm" onclick="closeProfileSettings()">← Zurück</button>
+        <div id="profile-settings-content"></div>
+      </div>
+      <div id="settings-logs-view" class="hidden">
+        <button class="route-btn-sm" onclick="closeLogsView()">← Zurück</button>
+        <div id="logs-settings-content">
+          <button class="logs-settings-btn" onclick="openLogWindow()">📋 Log-Fenster öffnen</button>
+          <div class="logs-settings-info">
+            <strong>Logs werden gespeichert in:</strong><br/>
+            %APPDATA%\TourCast-Pro\logs\app.log
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Route speichern ── -->
+  <div id="modal-save-route" class="modal-overlay"
+       onclick="if(event.target.id==='modal-save-route')closeModal('modal-save-route')">
+    <div class="modal-box">
+      <div class="modal-title">💾 Route im Archiv speichern</div>
+      <label for="save-route-name" class="modal-hint mb-4">Gib der Tour einen Namen:</label>
+      <input type="text" id="save-route-name" class="modal-input"
+             placeholder="z.B. Sonntagsrunde"
+             onkeydown="if(event.key==='Enter')confirmSaveRoute()">
+      <div class="modal-actions">
+        <button class="modal-btn" onclick="closeModal('modal-save-route')">Abbrechen</button>
+        <button class="modal-btn primary" onclick="confirmSaveRoute()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hilfe -->
+  <div id="help-overlay" class="modal-overlay" onclick="if(event.target.id==='help-overlay')closeHelp()">
+    <div class="modal-box max-height-85vh overflow-auto">
+      <div class="modal-title">❓ TourCast Hilfe</div>
+
+      <div class="help-section">
+        <div class="help-section-title">🟢 Der Go / No-Go Status</div>
+        <p>Der farbige Kreis oben links zeigt auf einen Blick, ob das Wetter heute fürs Motorradfahren geeignet ist. <b>Grün = losfahren</b>, <b>Gelb = Vorsicht</b>, <b>Rot = besser warten</b>. Tippe darauf, um den genauen Grund zu sehen – zum Beispiel zu viel Regen, starker Wind oder Glätte.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🗺️ Planer – Route berechnen</div>
+        <p>Klicke oben auf <b>Planer</b>, um das Routenpanel zu öffnen. Gib dort <b>Startpunkt</b> und <b>Ziel</b> ein – einfach Straße, PLZ und Ort eintippen, dann einen Vorschlag aus der Liste auswählen. Mit 📍 kannst du einen Punkt direkt auf der Karte antippen, mit 🎯 wird dein aktueller GPS-Standort verwendet.</p>
+        <p>Mit <b>＋ Zwischenziel</b> kannst du beliebig viele Stopps auf dem Weg einfügen. Die Reihenfolge lässt sich per Drag & Drop verschieben.</p>
+        <p>Klicke danach auf <b>🗺️ Route berechnen</b> – TourCast zeichnet die Route auf der Karte und zeigt Entfernung und Fahrzeit an.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🕐 Abfahrtszeit &amp; Wetter unterwegs</div>
+        <p>Stelle die geplante <b>Abfahrtszeit</b> ein. TourCast berechnet dann, wie das Wetter an jedem Streckenabschnitt zur voraussichtlichen Durchfahrtszeit sein wird – nicht nur am Start, sondern die gesamte Tour durch.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🛣️ Ausweichen: Autobahn, Maut, Fähren</div>
+        <p>Magst du keine Autobahnen oder willst Mautgebühren vermeiden? Aktiviere die entsprechenden Buttons vor der Routenberechnung – TourCast plant dann bewusst darum herum.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">⛰️ Höhenprofil</div>
+        <p>Nach der Routenberechnung erscheint automatisch das <b>Höhenprofil</b> der Strecke. So siehst du auf einen Blick, wie viel Auf- und Abfahrt dich erwartet und wo die höchsten Pässe liegen.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">☀️ Wetter-Kacheln entlang der Route</div>
+        <p>Unterhalb des Höhenprofils erscheinen kleine Wetter-Kacheln für jeden Streckenabschnitt. Jede Kachel zeigt Temperatur, Regen und die ungefähre Uhrzeit an diesem Punkt. So siehst du, wo ein Schauer wartet – und wo die Sonne scheint.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📍 POIs – Orte entlang der Route</div>
+        <p>Unter den Wetter-Kacheln findest du Buttons für <b>Tankstellen, Parkplätze, Aussichtspunkte, Restaurants, Cafés</b> und <b>Ladestationen</b>. Klicke einen Button an, um die entsprechenden Orte direkt auf der Karte eingeblendet zu bekommen. Nochmal klicken schaltet die Anzeige wieder aus. Über <b>Via-Punkt hinzufügen</b> im Popup eines eingeblendeten Ortes kannst du diesen direkt als Stopp in deine Route aufnehmen.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🏍️ Grip-Map – Wie rutschig ist die Straße?</div>
+        <p>Klicke oben auf <b>Grip-Map</b>. Die Karte färbt sich dann farbig ein: <b>Lila</b> = Schmierfilm-Risiko (z. B. nach dem ersten Regen), <b>Blau</b> = nasse Fahrbahn, <b>Hellgrün</b> = Straße trocknet gerade ab, <b>Dunkelgrün</b> = trocken und griffig. Mit dem Schieberegler unten kannst du bis zu 12 Stunden in die Zukunft schauen.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🌧️ Radar – Wo regnet es gerade?</div>
+        <p>Der Regenradar zeigt, wo es aktuell oder in wenigen Minuten regnet. Die Animation läuft automatisch durch. So erkennst du, ob ein Schauer auf dich zukommt oder sich verzieht.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🌡️ Wetter-Panel</div>
+        <p>Klicke oben auf <b>Wetter</b>, um detaillierte Werte zu sehen: Temperatur, gefühlte Temperatur, Wind, UV-Index, Sichtweite, Hitzebelastung und Windchill. Außerdem bekommst du eine <b>Bekleidungsempfehlung</b> – von T-Shirt bis Thermokombi. Die Luftqualität (AQI) zeigt, ob Smog oder Pollen ein Thema sind.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📤 Tour exportieren – GPX für dein Navi</div>
+        <p>Klicke oben auf <b>Tour Export</b>. Gib deiner Tour einen Namen, dann klicke auf <b>💾 Als Datei speichern</b>. Die erzeugte <b>GPX-Datei</b> kannst du auf dein Navigationsgerät (z. B. TomTom Rider) kopieren – die Route ist dann direkt als Navigation abrufbar.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📥 GPX importieren</div>
+        <p>Hast du eine Route von jemand anderem oder aus einer anderen App als GPX-Datei? Klicke im Planer auf <b>📥 GPX Import</b> und wähle die Datei aus – TourCast zeichnet die Route sofort auf der Karte ein.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">📍 GPS-Position</div>
+        <p>Der <b>GPS-Button</b> oben in der Leiste aktualisiert deinen aktuellen Standort auf der Karte. Wenn du dich fortbewegst, tippe darauf, um die Karte wieder auf deine Position zu zentrieren.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">⚙️ Einstellungen &amp; Profil</div>
+        <p>Unter dem <b>⚙️ Zahnrad</b> findest du alle persönlichen Einstellungen: dein Motorrad-Profil (Tankgröße, Verbrauch), den Suchradius für Tankstellen, Anzeigeoptionen und mehr. Ändere die Werte nach deinen Wünschen – TourCast passt alle Berechnungen automatisch an.</p>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-title">🔄 Aktualisieren</div>
+        <p>Der <b>↻ Button</b> ganz rechts oben lädt alle Wetter- und Radardaten neu. Nutze ihn, wenn du die App schon eine Weile offen hast und aktuelle Daten möchtest.</p>
+      </div>
+
+      <button class="modal-btn primary mt-20" onclick="closeHelp()">Verstanden – Schließen</button>
+    </div>
+  </div>
+
+  <!-- Export -->
+  <div id="modal-export" class="modal-overlay" onclick="if(event.target.id==='modal-export')closeModal('modal-export')">
+    <div class="modal-box">
+      <div class="modal-title">📤 Route exportieren</div>
+      <div class="modal-section-title">GPX-Datei</div>
+      <label for="gpx-route-name" class="modal-hint mb-4">Name der Tour (Anzeige im Navi):</label>
+      <input type="text" id="gpx-route-name" class="modal-input" placeholder="z.B. Alpentour Tag 1">
+      <label class="flex-label">
+        <input type="checkbox" id="gpx-export-as-track" checked>
+        <span>Hochauflösender Track</span>
+      </label>
+      <button class="modal-export-btn" onclick="exportLocal()">💾 Als Datei speichern</button>
+      <!-- Container für dynamische TomTom-Hilfe -->
+      <div id="export-help-tt"></div>
+      <button class="modal-btn mt-10" onclick="closeModal('modal-export')">Schließen</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Core Scripts (Reihenfolge beachten!) -->
+  <script src="js/state.js"></script>
+  <script src="js/routing-utils.js"></script><!-- Polyline-Dekoder, Koordinaten-Validierung -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/radar.js"></script>
+  <script src="js/poi.js"></script><!-- Muss vor roundtrip.js geladen sein wegen loadFuelAlongRoute() -->
+  <script src="js/roundtrip.js"></script>
+  <script src="js/elevation.js"></script>  
+  <script src="js/gpx-tomtom.js"></script><!-- TomTom Rider 500 optimierte GPX-Export -->
+  <script src="js/routing.js"></script>
+  <script src="js/weather-engine.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/data-manager.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/W11-data-manager.js"></script>
+  <script src="js/app.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      // initApp() wird automatisch durch app.js gestartet
+    });
+
+    // Service Worker für PWA-Offline-Support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

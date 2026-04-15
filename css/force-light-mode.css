@@ -1,0 +1,228 @@
+/* ═════════════════════════════════════════════════════════════════════════
+   FORCE LIGHT MODE - ALLE DARK-MODE DEFINITIONEN ÜBERSCHREIBEN
+   Dies ist die LETZTE CSS-Datei und verwendet !important um ALLES zu erzwingen
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── ROOT VARIABLEN - MIT !IMPORTANT ERZWUNGEN ── */
+:root {
+  --bg:           #EEF2F7 !important;
+  --surface:      #FFFFFF !important;
+  --surface2:     #E4ECF5 !important;
+  --surface3:     #D0DCE8 !important;
+  --surface-2:    #E4ECF5 !important;
+  --surface-3:    #D0DCE8 !important;
+  --border:       rgba(0,0,0,0.10) !important;
+  --border-hi:    rgba(0,0,0,0.20) !important;
+  --panel-bg:     rgba(255,255,255,0.96) !important;
+  --nav-bg:       rgba(238,242,247,0.95) !important;
+  --overlay-dim:  rgba(10,20,40,0.65) !important;
+  
+  --accent:       #D35400 !important;
+  --accent-dim:   rgba(211,84,0,0.12) !important;
+  --accent-glow:  rgba(211,84,0,0.25) !important;
+  --amber:        #D97E24 !important;
+  
+  --text:         #2D3E50 !important;
+  --text-bright:  #050A10 !important;
+  --text-mid:     #3E5268 !important;
+  --text-muted:   #5A738E !important;
+  --text-label:   #4A627A !important;
+  --text-dim:     #5A738E !important;
+  
+  --go:           #008A4B !important;
+  --caution:      #966900 !important;
+  --danger:       #C51B32 !important;
+  --grip-warn:    #8E24AA !important;
+  --grip-wet:     #0277BD !important;
+  --grip-damp:    #0D7BB5 !important;
+  --grip-dry:     #008A4B !important;
+  
+  --gold:         #D35400 !important;
+  --gold-dim:     rgba(211,84,0,0.12) !important;
+  --green:        #008A4B !important;
+  --red:          #C51B32 !important;
+  --yellow:       #966900 !important;
+  --orange:       #D97E24 !important;
+}
+
+/* ── HTML & BODY - LIGHT MODE ERZWUNGEN ── */
+html,
+body {
+  background-color: #EEF2F7 !important;
+  color: #2D3E50 !important;
+  color-scheme: light only !important;
+}
+
+/* ── ALLE DUNKLEN HINTERGRÜNDE ERSETZEN ── */
+[style*="background: #0"],
+[style*="background: #1"],
+[style*="background: #2"],
+[style*="background: #3"],
+[style*="background: rgb(0"],
+[style*="background: rgb(1"],
+[style*="background: rgb(2"],
+[style*="background: rgb(3"],
+[style*="background: rgb(6"],
+[style*="background: rgb(10"],
+[style*="background: rgb(13"],
+[style*="background: rgb(15"],
+[style*="background: rgb(32"],
+[style*="background: rgba(0, 0, 0"],
+[style*="background: rgba(3"],
+[style*="background: rgba(6"],
+[style*="background: rgba(10"],
+[style*="background: rgba(13"],
+[style*="background: rgba(15"],
+[style*="background: rgba(32"] {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+}
+
+/* ── MICA-VARIABLEN (WINDOWS FLUENT) ── */
+:root {
+  --mica-light:    rgba(255, 255, 255, 0.05) !important;
+  --mica-medium:   rgba(255, 255, 255, 0.08) !important;
+  --mica-strong:   rgba(255, 255, 255, 0.12) !important;
+  --acrylic:       rgba(238, 242, 247, 0.9) !important;
+  --glass-bg:      rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ── ÜBERSCHREIBE ALLE @MEDIA QUERIES ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:           #EEF2F7 !important;
+    --surface:      #FFFFFF !important;
+    --text:         #2D3E50 !important;
+  }
+  html, body {
+    background-color: #EEF2F7 !important;
+    color: #2D3E50 !important;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:           #EEF2F7 !important;
+    --surface:      #FFFFFF !important;
+    --text:         #2D3E50 !important;
+  }
+  html, body {
+    background-color: #EEF2F7 !important;
+    color: #2D3E50 !important;
+  }
+}
+
+/* ── MAP-THUMBNAILS AUF LIGHT MODE ── */
+.layer-thumb-osm-de,
+.layer-thumb-osm-std,
+.layer-thumb-topo,
+.layer-thumb-satellite {
+  background: linear-gradient(135deg, #D8E8F8, #FFFFFF) !important;
+}
+
+/* ── TOAST & POPUPS - LIGHT MODE ── */
+.toast {
+  background-color: #FFFFFF !important;
+  color: #2D3E50 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: #FFFFFF !important;
+  color: #2D3E50 !important;
+}
+
+.status-bubble-container {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #2D3E50 !important;
+}
+
+/* ── BUTTONS - LIGHT MODE TEXT ── */
+button,
+.btn,
+[role="button"] {
+  color: #2D3E50 !important;
+}
+
+button:hover,
+.btn:hover,
+[role="button"]:hover {
+  background-color: rgba(211, 84, 0, 0.12) !important;
+}
+
+/* ── INPUTS - LIGHT MODE ── */
+input,
+textarea,
+select {
+  background-color: #FFFFFF !important;
+  color: #2D3E50 !important;
+  border-color: rgba(0, 0, 0, 0.10) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  background-color: #FFFFFF !important;
+  color: #2D3E50 !important;
+  border-color: #D35400 !important;
+}
+
+/* ── LINKS ── */
+a {
+  color: #D35400 !important;
+}
+
+a:visited {
+  color: #D97E24 !important;
+}
+
+/* ── PANELS & SHEETS ── */
+.panel,
+.sheet,
+[role="region"],
+.container {
+  background-color: #FFFFFF !important;
+  color: #2D3E50 !important;
+}
+
+/* ── REMOVE ALLE INVERT FILTER (für Dark-Map) ── */
+.dark-tiles .leaflet-tile {
+  filter: none !important;
+}
+
+/* ── NAVIGATION BANNER - LIGHT MODE ── */
+.top-nav,
+.w11-nav {
+  background-color: #EEF2F7 !important;
+  background: #EEF2F7 !important;
+  color: #2D3E50 !important;
+}
+
+.nav-btn {
+  color: #5A738E !important;
+}
+
+.nav-btn:hover {
+  color: #3E5268 !important;
+}
+
+/* ── ENSURE data-theme="light" ÜBERALL ── */
+html[data-theme="dark"],
+body[data-theme="dark"],
+[data-theme="dark"] {
+  --bg:           #EEF2F7 !important;
+  --surface:      #FFFFFF !important;
+  --text:         #2D3E50 !important;
+  background-color: #EEF2F7 !important;
+  color: #2D3E50 !important;
+}
+
+/* ── LEAFLET CONTROLS ── */
+.leaflet-control {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  color: #2D3E50 !important;
+}
+
+.leaflet-control-attribution {
+  background-color: rgba(238, 242, 247, 0.95) !important;
+  color: #5A738E !important;
+}
